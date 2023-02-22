@@ -1,12 +1,12 @@
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class HttpHeaderBuilder implements HttpHandler {
+public class HttpHeaderBuilder {
 
+    public static String notAllowed(){
+        return "HTTP/1.0 Method 405 Not allowed";
+    }
     public static String notFound(String fileName, long length) {
         return "HTTP/1.0 404 Not Found\r\n" +
                 getContentType(fileName) +
@@ -22,17 +22,11 @@ public class HttpHeaderBuilder implements HttpHandler {
     private static String getContentType(String fileName) {
         String contentType = "";
         try {
-            contentType = Files.probeContentType(Path.of("webResources/" + fileName));
-            //return contentType;
+            contentType = Files.probeContentType(Path.of("webresources" + fileName));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return contentType;
-    }
-
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-
     }
 }
