@@ -24,6 +24,8 @@ public class WebServer {
         while (true) {
             serveRequests(serverSocket, service);
         }
+
+
     }
 
     public void serveRequests(ServerSocket socket, ExecutorService service) throws IOException {
@@ -57,6 +59,7 @@ public class WebServer {
         public void run() {
             try {
                 dealWithRequest();
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -83,9 +86,19 @@ public class WebServer {
         }
 
         private void sendFile() throws IOException {
-            send(HttpHeaderBuilder.ok(path));
-            Path.of(path);
-            File file = new File(path);
+            String extension = path.substring(path.length()-4, path.length());
+            switch(extension) {
+                case ".txt" : txtSender();
+                case ".png" : txtSender();
+                case ".jpg":
+                case ".mp3":
+                case ".mp4":
+            }
+
+        }
+
+        private void txtSender() throws FileNotFoundException {
+            File file = new File("src/webresources" +path);
             Scanner scanner = new Scanner(file);
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -94,7 +107,17 @@ public class WebServer {
                 stringBuilder.append("\n");
             }
             scanner.close();
+            send(HttpHeaderBuilder.ok(path,Long.valueOf(stringBuilder.length())));
             send(stringBuilder.toString());
+        }
+
+        private void imageSender() throws FileNotFoundException {
+            File file = new File("src/webresources" +path);
+            Scanner scanner = new Scanner(file);
+
+            while(scanner.hasNextLine())
+
+
         }
 
         private Boolean validateRequests() throws IOException {

@@ -16,10 +16,10 @@ public class HttpHeaderBuilder {
                 "Content-Length: " + /*length*/ "\r\n\r\n";
     }
 
-    public static String ok(String fileName/*, long length*/) {
+    public static String ok(String fileName, long length) {
         return "HTTP/1.1 200 Document Follows\r\n" +
                 getContentType(fileName) +
-                "Content-Length: " + /*length*/ "\r\n\r\n";
+                "Content-Length: " + length + "\r\n";
     }
 
     private static String getContentType(String fileName) {
