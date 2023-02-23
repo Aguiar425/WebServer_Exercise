@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,11 +21,10 @@ public class WebServer {
         ServerSocket serverSocket = new ServerSocket(port);
 
         ExecutorService service = Executors.newCachedThreadPool();
-
+5
         while (true) {
             serveRequests(serverSocket, service);
         }
-
 
     }
 
@@ -38,21 +38,18 @@ public class WebServer {
 
     public static class RequestHandler implements Runnable {
         Socket clientSocket;
-
         BufferedReader input;
-
         BufferedWriter output;
-
+        BufferedOutputStream outputStream;
         String methodVerb;
-
         String path;
-
         String protocol;
 
         public RequestHandler(Socket clientSocket) throws IOException {
             this.clientSocket = clientSocket;
             this.input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             this.output = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            this.outputStream = new BufferedOutputStream(clientSocket.getOutputStream());
         }
 
         @Override
@@ -86,40 +83,13 @@ public class WebServer {
         }
 
         private void sendFile() throws IOException {
-            String extension = path.substring(path.length()-4, path.length());
-            switch(extension) {
-                case ".txt" : txtSender();
-                case ".png" : txtSender();
-                case ".jpg":
-                case ".mp3":
-                case ".mp4":
-            }
-
+            Path filepath = Paths.get("src/webresources" + path);
+            byte [] fileData = Files.readAllBytes(filepath);
+            send(HttpHeaderBuilder.ok(path,fileData.length));
+            outputStream.write(fileData);
+            outputStream.flush();
+            outputStream.close();
         }
-
-        private void txtSender() throws FileNotFoundException {
-            File file = new File("src/webresources" +path);
-            Scanner scanner = new Scanner(file);
-
-            StringBuilder stringBuilder = new StringBuilder();
-            while (scanner.hasNextLine()) {
-                stringBuilder.append(scanner.nextLine());
-                stringBuilder.append("\n");
-            }
-            scanner.close();
-            send(HttpHeaderBuilder.ok(path,Long.valueOf(stringBuilder.length())));
-            send(stringBuilder.toString());
-        }
-
-        private void imageSender() throws FileNotFoundException {
-            File file = new File("src/webresources" +path);
-            Scanner scanner = new Scanner(file);
-
-            while(scanner.hasNextLine())
-
-
-        }
-
         private Boolean validateRequests() throws IOException {
             if (!methodVerb.equals("get")) {
                 send(HttpHeaderBuilder.notAllowed());
